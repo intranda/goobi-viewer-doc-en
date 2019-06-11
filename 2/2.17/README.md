@@ -4,7 +4,7 @@ The search in the Goobi viewer allows a combined search both in the metadata and
 
 ![Simple search](../../.gitbook/assets/2.17.png)
 
-Depending on the precision of the search query and the number of indexed works, hundreds or thousands of search hits may be displayed on a search hit list spread over several pages. The number of search hits displayed per page can be configured using the following element \(the default value is 10\):
+Depending on the precision of the search query and the number of indexed records, hundreds or thousands of search hits may be displayed on a search hit list spread over several pages. The number of search hits displayed per page can be configured using the following element \(the default value is 10\):
 
 {% code-tabs %}
 {% code-tabs-item title="config\_viewer.xml" %}
