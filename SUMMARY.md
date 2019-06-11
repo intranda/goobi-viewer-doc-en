@@ -42,7 +42,7 @@
     * [2.17.4 Timeline](2/2.17/2.17.4.md)
     * [2.17.5 Calendar](2/2.17/2.17.5.md)
     * [2.17.6 Save search](2/2.17/2.17.6.md)
-    * [2.17.7 Boosting of whole works in the relevance sorting](2/2.17/2.17.7.md)
+    * [2.17.7 Boosting of whole records in the relevance sorting](2/2.17/2.17.7.md)
     * [2.17.8 Aggregated search hit display](2/2.17/2.17.8.md)
     * [2.17.9 Versioning of records](2/2.17/2.17.9.md)
     * [2.17.10 Exporting search hits](2/2.17/2.17.10.md)
