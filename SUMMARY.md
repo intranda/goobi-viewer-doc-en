@@ -115,6 +115,7 @@
     * [4.1.8 Xepicur](4/4.1/4.1.8.md)
     * [4.1.9 Goobi viewer overview pages](4/4.1/4.1.9.md)
     * [4.1.10 Goobi viewer crowdsourcing](4/4.1/4.1.10.md)
+    * [4.1.11 Sets](4/4.1/4.1.11-sets.md)
   * [4.2 SRU interface](4/4.2.md)
 * [5. User interface](5/README.md)
   * [5.1 Administration](5/5.1/README.md)
