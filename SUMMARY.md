@@ -165,6 +165,7 @@
     * [6.13.3 Goobi workflow: Entering individual collections](6/6.13/6.13.3-goobi-workflow-entering-individual-collections.md)
 * [6.13.4 Goobi viewer: Show individual collections](6.13.4.md)
 * [7. FAQ](7.md)
-* [8. Developers and Administrators](https://docs.intranda.com/goobi-viewer-de/8)
+* [8. Developers and Administrators](8/README.md)
+  * [8.7 Installation guide](8/8.7.md)
 * [9. Additional details](9.md)
 
