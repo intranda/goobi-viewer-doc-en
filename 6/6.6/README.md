@@ -1,10 +1,6 @@
-# 6.6 Web API
+# 6.6 REST API
 
-{% hint style="warning" %}
-The Web API is marked as deprecated in its current form and will be replaced by a REST service.
-{% endhint %}
-
-The Web API allows information on records to be obtained as JSON data records via a simple GET URL call. The data records of the hit set consist of statically defined and optional freely configurable fields. 
+The REST API allows information on records to be obtained as JSON data records via a simple GET URL call. The data records of the hit set consist of statically defined and optional freely configurable fields. 
 
 The following static fields are always included:
 

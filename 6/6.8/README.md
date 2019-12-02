@@ -4,8 +4,7 @@ The Goobi viewer supports the possibility of making certain aspects of a record 
 
 The prerequisite is that so-called access conditions are included in the source document of the record as a metadata. The corresponding values must be mapped in the Solr Index in the field `ACCESSCONDITION`:
 
-{% code-tabs %}
-{% code-tabs-item title="solr\_indexerconfig.xml" %}
+{% code title="solr\_indexerconfig.xml" %}
 ```markup
 <ACCESSCONDITION>
     <list>
@@ -17,6 +16,5 @@ The prerequisite is that so-called access conditions are included in the source 
     </list>
 </ACCESSCONDITION>
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
+{% endcode %}
 

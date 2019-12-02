@@ -2,8 +2,7 @@
 
 If your Goobi viewer has been installed with its own theme, the corresponding name is contained in the following configuration element:
 
-{% code-tabs %}
-{% code-tabs-item title="config\_viewer.xml" %}
+{% code title="config\_viewer.xml" %}
 ```markup
 <viewer>
     <theme subTheme="true"
@@ -14,8 +13,7 @@ If your Goobi viewer has been installed with its own theme, the corresponding na
            filterQueryVisible="false" />
 </viewer>
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
+{% endcode %}
 
 The `mainTheme` attribute contains the name of the theme. This must correspond to the folder name in which the theme files are located. 
 
