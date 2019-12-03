@@ -37,7 +37,7 @@
     * [2.16.1 External themes](2/2.16/2.16.1.md)
   * [2.17 Search](2/2.17/README.md)
     * [2.17.1 Sorting](2/2.17/2.17.1.md)
-    * [2.17.2 Facetting](2/2.17/2.17.2.md)
+    * [2.17.2 Faceting](2/2.17/2.17.2.md)
     * [2.17.3 Advanced search](2/2.17/2.17.3.md)
     * [2.17.4 Timeline](2/2.17/2.17.4.md)
     * [2.17.5 Calendar](2/2.17/2.17.5.md)
