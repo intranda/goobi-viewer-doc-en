@@ -1,3 +1,7 @@
+---
+description: Documentation for the Open-Source-Software Goobi viewer from intranda
+---
+
 # Documentation Goobi viewer
 
 This is a technical guide to configuring the Goobi viewer and its Core, Indexer and Connector components. It describes parts of the user interface and application scenarios.
