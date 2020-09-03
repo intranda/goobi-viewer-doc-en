@@ -177,5 +177,5 @@
 * [7. FAQ](7.md)
 * [8. Developers and Administrators](8/README.md)
   * [8.7 Installation guide](8/8.7.md)
-* [9. Additional details](9.md)
+* [9. Further details](9.md)
 
