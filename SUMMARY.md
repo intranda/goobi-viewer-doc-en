@@ -52,7 +52,7 @@
     * [1.17.10 Exporting search hits](conf/1/17/10.md)
   * [1.18 Digital collections](conf/1/18/README.md)
     * [1.18.1 Collection hierarchy](conf/1/18/1.md)
-    * [1.18.2 Sorting of records in collections](conf/1/18/2.md)
+    * [1.18.2 Sorting of records](conf/1/18/2.md)
     * [1.18.3 Sorting of collections](conf/1/18/3.md)
     * [1.18.4 Blacklist](conf/1/18/4.md)
     * [1.18.5 Collection size](conf/1/18/5.md)

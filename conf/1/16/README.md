@@ -2,14 +2,16 @@
 
 If your Goobi viewer has been installed with its own theme, the corresponding name is contained in the following configuration element:
 
-{% code title="config\_viewer.xml" %}
+{% tabs %}
+{% tab title="config\_viewer.xml" %}
 ```markup
 <viewer>
     <theme mainTheme="reference"
            discriminatorField=""/>
 </viewer>
 ```
-{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 The `mainTheme` attribute contains the name of the theme. This must correspond to the folder name in which the theme files are located. 
 

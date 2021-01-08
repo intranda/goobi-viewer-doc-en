@@ -6,7 +6,8 @@ The search in the Goobi viewer allows a combined search both in the metadata and
 
 Depending on the precision of the search query and the number of indexed records, a very large number of search hits may result. These are displayed spread over several pages. A drop-down menu is available to the user, where he can select the number of search hits displayed per page. This list can be configured as follows:
 
-{% code title="config\_viewer.xml" %}
+{% tabs %}
+{% tab title="config\_viewer.xml" %}
 ```markup
 <search>
     <hitsPerPage>
@@ -18,13 +19,15 @@ Depending on the precision of the search query and the number of indexed records
     <fulltextFragmentLength>120</fulltextFragmentLength>
 </search>
 ```
-{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 The element `fulltextFragmentLength` defines the approximate length of the full text sections for the search hit display. The default value is 200. 
 
 The following configuration block is available to define the search ranges of the simple search:
 
-{% code title="config\_viewer.xml" %}
+{% tabs %}
+{% tab title="config\_viewer.xml" %}
 ```markup
 <search>
     <filters>
@@ -36,7 +39,8 @@ The following configuration block is available to define the search ranges of th
     </filters>
 </search>
 ```
-{% endcode %}
+{% endtab %}
+{% endtabs %}
 
 Each filter entry creates a new radio button below the simple search.
 
