@@ -107,7 +107,6 @@
   * [2.8 Updating individual page documents](conf/2/8.md)
   * [2.9 Deleting records](conf/2/9.md)
   * [2.10 Solr scheme](conf/2/10.md)
-  * [2.11 Special Solr fields](conf/2/11.md)
 * [3. Goobi viewer Connector](conf/3/README.md)
   * [3.1 OAI interface](conf/3/1/README.md)
     * [3.1.1 Main Configuration](conf/3/1/1.md)
