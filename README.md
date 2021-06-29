@@ -6,7 +6,7 @@ description: Documentation for the Open Source Software Goobi viewer from intran
 
 ## About this manual
 
-In front of you is the Goobi viewer manual. The documentation consists of several parts. The configuration options of the Core, Indexer and Connector components are described in detail. In addition, parts of the application interface and application scenarios are described. 
+The Goobi viewer documentation consists of several parts. The configuration options of the Core, Indexer and Connector components are described in detail. In addition, parts of the application interface and application scenarios are described. 
 
 The source code of the Goobi viewer and its components can be found on GitHub.
 
