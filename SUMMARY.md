@@ -158,11 +158,12 @@
   * [1.3 Subthemes](misc/1/3.md)
   * [1.4 Authority data](misc/1/4.md)
   * [1.5 Multilingualism](misc/1/5.md)
-  * [1.6 Karten](misc/1/6.md)
+  * [1.6 Maps](misc/1/6.md)
   * [1.7 Sub collections](misc/1/7.md)
   * [1.8 Multiple Goobi viewer](misc/1/8.md)
   * [1.9 Crowdsourcing module](misc/1/9.md)
   * [1.10 Archival documents](misc/1/10.md)
+  * [1.11 Solr Queries](misc/1/1.11-solr-queries.md)
 * [2. FAQ](misc/2.md)
 * [3. Glossary](misc/3.-glossary.md)
 
