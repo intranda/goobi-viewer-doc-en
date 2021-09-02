@@ -19,7 +19,7 @@
   * [1.7 Access conditions and images](conf/1/7.md)
   * [1.8 Captcha](conf/1/1.8.md)
   * [1.9 PDF download](conf/1/9/README.md)
-    * [2.9.1 Variants](conf/1/9/2.9.1.md)
+    * [1.9.1 Variants](conf/1/9/2.9.1.md)
     * [1.9.2 Download Links](conf/1/9/2.md)
     * [1.9.3 Individual PDF title page](conf/1/9/3.md)
   * [1.10 ePub download](conf/1/10.md)

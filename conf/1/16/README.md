@@ -6,8 +6,7 @@ If your Goobi viewer has been installed with its own theme, the corresponding na
 {% tab title="config\_viewer.xml" %}
 ```markup
 <viewer>
-    <theme mainTheme="reference"
-           discriminatorField=""/>
+    <theme mainTheme="reference" discriminatorField=""/>
 </viewer>
 ```
 {% endtab %}
