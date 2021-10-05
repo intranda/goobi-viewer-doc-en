@@ -1,0 +1,861 @@
+# 3. Installation guide
+
+## Introduction
+
+The following installation guide for the Goobi viewer refers to Ubuntu Linux 20.04. It is written as a step-by-step guide from top to bottom, meaning that settings and configurations build on each other. If the order is not followed, certain commands may fail. 
+
+VIEWER.EXAMPLE.ORG is used as the domain name in this manual, please adapt this to your own DNS name.
+
+For productive use, a virtual machine with at least 4 CPUs and 8GB RAM is recommended.
+
+## Preparation
+
+First, log on to the server on which the Goobi viewer is to be installed and obtain root rights:
+
+```bash
+ssh VIEWER.EXAMPLE.ORG
+sudo -i
+```
+
+Then generate a password for the Goobi viewer database and a token and store them as a variable in the session. The DNS name is also stored there:
+
+```bash
+export VIEWER_HOSTNAME=VIEWER.EXAMPLE.ORG
+export PW_SQL_VIEWER=SECRETPASSWORT
+export VIEWER_USERNAME=goobi@intranda.com
+export VIEWER_USERPASS=SECRETPASSWORD
+export TOKEN=$(uuidgen)
+export install=/tmp/install
+```
+
+Now install the following packages:
+
+```bash
+apt -y install git patch openjdk-11-jdk-headless tomcat9 mariadb-server apache2 ttf-mscorefonts-installer unzip zookeeperd python3-passlib python3-bcrypt
+```
+
+At the end of the preparation, a temporary directory for the installation must be created and the Goobi viewer Core Config Repository must be cloned. This contains the files necessary for the installation:
+
+```bash
+install=/tmp/install
+mkdir -p $install
+cd $install
+git clone https://github.com/intranda/goobi-viewer-core-config.git
+```
+
+It is recommended to have set a DNS entry for the server at this time.
+
+## Variables and aliases 
+
+Add the following aliases to `/root/.bash_aliases`:
+
+```bash
+cat << "EOF" >>/root/.bash_aliases
+alias cata='journalctl -u tomcat9 -n 1000 -f'
+alias ct='chown tomcat:tomcat *'
+alias ctr='chown -R tomcat:tomcat *'
+alias ind='tail -n 1000 -f /opt/digiverso/logs/indexer.log'
+alias vl='tail -n 1000 -f /opt/digiverso/logs/viewer.log'
+EOF
+```
+
+Adopt the changes in the current session:
+
+```text
+. /root/.bashrc
+```
+
+## Install packages 
+
+Install the following packages including all dependencies:
+
+```bash
+apt -y install openjdk-11-jdk-headless tomcat9 mariadb-server apache2 ttf-mscorefonts-installer unzip
+```
+
+## Create directory structure 
+
+The following commands create the necessary folder structure:
+
+```bash
+mkdir -p /opt/digiverso/{indexer,logs,viewer/{abbyy,cmdi,deleted_mets,hotfolder,media,orig_lido,orig_denkxweb,success,ugc,alto,cms_media,error_mets,indexed_lido,mix,pdf,tei,updated_mets,cache,config/{PDFTitlePage,watermark},fulltext,indexed_mets,oai/token,ptif,themes,wc}}
+chown -R tomcat: /opt/digiverso/{indexer,logs,viewer}
+```
+
+## Configure services
+
+### Tomcat
+
+```bash
+SYSTEMD_EDITOR=tee systemctl edit tomcat9 << "EOF"
+[Service]
+LogsDirectoryMode=755
+CacheDirectoryMode=755
+ProtectSystem=true
+NoNewPrivileges=true
+ReadWritePaths=
+EOF
+```
+
+In `/etc/default/tomcat9` adjust the memory under -Xmx to the available machine memory, choose reasonable garbage collector options and use urandom for faster Tomcat startup:
+
+```c
+patch /etc/default/tomcat9 << "EOF"
+@@ -11,6 +11,15 @@
+ # To enable remote debugging uncomment the following line.
+ # You will then be able to use a Java debugger on port 8000.
+ #JAVA_OPTS="${JAVA_OPTS} -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
++JAVA_OPTS="-Djava.awt.headless=true -Xmx4g -Xms4g"
++JAVA_OPTS="${JAVA_OPTS} -XX:+UseG1GC"
++JAVA_OPTS="${JAVA_OPTS} -XX:+ParallelRefProcEnabled"
++JAVA_OPTS="${JAVA_OPTS} -XX:+DisableExplicitGC"
++JAVA_OPTS="${JAVA_OPTS} -XX:+CMSClassUnloadingEnabled"
++JAVA_OPTS="${JAVA_OPTS} -Djava.security.egd=file:/dev/./urandom"
++JAVA_OPTS="${JAVA_OPTS} -Dfile.encoding='utf-8'"
++
++UMASK=0022
+ 
+ # Java compiler to use for translating JavaServer Pages (JSPs). You can use all
+ # compilers that are accepted by Ant's build.compiler property.
+@@ -20,4 +29,4 @@
+ #SECURITY_MANAGER=true
+ 
+ # Whether to compress logfiles older than today's
+-#LOGFILE_COMPRESS=1
++LOGFILE_COMPRESS=1
+EOF
+```
+
+Further configurations are made in `/etc/tomcat9/server.xml`. This will disable the appContextProtection for the JreMemoryLeakPreventionListener, set up a HTTP connector \(with correct proxyName\) and an AJP connector on localhost. A Crawler Session Manager Valve is also activated:
+
+```markup
+sed -e "s|VIEWER.EXAMPLE.ORG|${VIEWER_HOSTNAME}|g" << "EOF" | patch /etc/tomcat9/server.xml
+@@ -66,59 +66,22 @@
+          APR (HTTP/AJP) Connector: /docs/apr.html
+          Define a non-SSL/TLS HTTP/1.1 Connector on port 8080
+     -->
+-    <Connector port="8080" protocol="HTTP/1.1"
++    <Connector address="127.0.0.1" port="8080" protocol="HTTP/1.1"
+                connectionTimeout="20000"
+-               redirectPort="8443" />
+-    <!-- A "Connector" using the shared thread pool-->
+-    <!--
+-    <Connector executor="tomcatThreadPool"
+-               port="8080" protocol="HTTP/1.1"
++	       redirectPort="8443"
++               maxThreads="400"
++               URIEncoding="UTF-8"
++               enableLookups="false"
++               disableUploadTimeout="true"
++               proxyName="VIEWER.EXAMPLE.ORG"
++               proxyPort="80" />	    
++
++    <Connector address="127.0.0.1" port="8009" protocol="AJP/1.3"
++               secretRequired="false"
+                connectionTimeout="20000"
+-               redirectPort="8443" />
+-    -->
+-    <!-- Define an SSL/TLS HTTP/1.1 Connector on port 8443
+-         This connector uses the NIO implementation. The default
+-         SSLImplementation will depend on the presence of the APR/native
+-         library and the useOpenSSL attribute of the
+-         AprLifecycleListener.
+-         Either JSSE or OpenSSL style configuration may be used regardless of
+-         the SSLImplementation selected. JSSE style configuration is used below.
+-    -->
+-    <!--
+-    <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+-               maxThreads="150" SSLEnabled="true">
+-        <SSLHostConfig>
+-            <Certificate certificateKeystoreFile="conf/localhost-rsa.jks"
+-                         type="RSA" />
+-        </SSLHostConfig>
+-    </Connector>
+-    -->
+-    <!-- Define an SSL/TLS HTTP/1.1 Connector on port 8443 with HTTP/2
+-         This connector uses the APR/native implementation which always uses
+-         OpenSSL for TLS.
+-         Either JSSE or OpenSSL style configuration may be used. OpenSSL style
+-         configuration is used below.
+-    -->
+-    <!--
+-    <Connector port="8443" protocol="org.apache.coyote.http11.Http11AprProtocol"
+-               maxThreads="150" SSLEnabled="true" >
+-        <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
+-        <SSLHostConfig>
+-            <Certificate certificateKeyFile="conf/localhost-rsa-key.pem"
+-                         certificateFile="conf/localhost-rsa-cert.pem"
+-                         certificateChainFile="conf/localhost-rsa-chain.pem"
+-                         type="RSA" />
+-        </SSLHostConfig>
+-    </Connector>
+-    -->
++               maxThreads="400"
++               URIEncoding="UTF-8" />	
+ 
+-    <!-- Define an AJP 1.3 Connector on port 8009 -->
+-    <!--
+-    <Connector protocol="AJP/1.3"
+-               address="::1"
+-               port="8009"
+-               redirectPort="8443" />
+-    -->
+ 
+     <!-- An Engine represents the entry point (within Catalina) that processes
+          every request.  The Engine implementation for Tomcat stand alone
+@@ -161,9 +124,14 @@
+         <!-- Access log processes all example.
+              Documentation at: /docs/config/valve.html
+              Note: The pattern used is equivalent to using pattern="common" -->
++	<!--
+         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+                prefix="localhost_access_log" suffix=".txt"
+                pattern="%h %l %u %t &quot;%r&quot; %s %b" />
++	-->
++       <Valve className="org.apache.catalina.valves.CrawlerSessionManagerValve"
++              crawlerUserAgents=".*[bB]ot.*|.*Yahoo! Slurp.*|.*Feedfetcher-Google.*|.*Apache-HttpClient.*|.*[Ss]pider.*|.*[Cc]rawler.*|.*nagios.*|.*Yandex.*"
++              sessionInactiveInterval="60"/>
+ 
+       </Host>
+     </Engine>
+EOF
+```
+
+Disable session persistence in `/etc/tomcat9/context.xml` by running the following patch:
+
+```markup
+patch /etc/tomcat9/context.xml << "EOF"
+@@ -25,7 +25,5 @@
+     <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+ 
+     <!-- Uncomment this to disable session persistence across Tomcat restarts -->
+-    <!--
+     <Manager pathname="" />
+-    -->
+ </Context>
+EOF
+```
+
+### Apache
+
+Apache must be set up to make the viewer available externally. Activate the following modules for this:
+
+```text
+a2enmod proxy_ajp
+a2enmod proxy_http
+a2enmod proxy_wstunnel
+a2enmod rewrite
+a2enmod expires
+a2enmod headers
+```
+
+Place the following file at `/etc/apache2/sites-available/${VIEWER_HOSTNAME}.conf`:
+
+```bash
+sed -e "s|VIEWER.EXAMPLE.ORG|${VIEWER_HOSTNAME}|g" << "EOF" >/etc/apache2/sites-available/${VIEWER_HOSTNAME}.conf
+<VirtualHost *:80>
+        ServerAdmin support@intranda.com
+        ServerName VIEWER.EXAMPLE.ORG
+        DocumentRoot /var/www
+ 
+        ## make sure rewrite is enabled
+        RewriteEngine On 
+ 
+        ## search engines: do not follow certain urls
+        RewriteCond %{HTTP_USER_AGENT} ^.*bot.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*Yandex.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*spider.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*rawler.*$ [NC]
+        ReWriteRule ^(.*);jsessionid=[A-Za-z0-9]+(.*)$ $1$2 [L,R=301]
+ 
+        RewriteCond %{HTTP_USER_AGENT} ^.*bot.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*Yandex.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*spider.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*rawler.*$ [NC]
+        ReWriteRule ^(.*)viewer/!(.*)$ $1viewer/$2 [L,R=301]
+ 
+        RewriteCond %{HTTP_USER_AGENT} ^.*bot.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*Yandex.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*spider.*$ [NC,OR]
+        RewriteCond %{HTTP_USER_AGENT} ^.*rawler.*$ [NC]
+        ReWriteRule ^(.*)/[Ll][Oo][Gg]_(.*)$ $1/ [L,R=301]
+ 
+        ## compress output
+        <IfModule mod_deflate.c>
+                AddOutputFilterByType DEFLATE text/plain text/html text/xml
+                AddOutputFilterByType DEFLATE text/css text/javascript
+                AddOutputFilterByType DEFLATE application/xml application/xhtml+xml
+                AddOutputFilterByType DEFLATE application/rss+xml
+                AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+        </IfModule>
+ 
+        ## general proxy settings
+        ProxyPreserveHost On
+        SetEnv force-proxy-request-1.0 1
+        SetEnv proxy-nokeepalive 1
+        <Proxy *>
+                Require local
+        </Proxy>
+ 
+        ## CORS for IIIF
+        Header set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, OPTIONS"
+        Header always set Access-Control-Max-Age "600"
+        Header always set Access-Control-Allow-Headers "Authorization, Content-Type"
+        Header always set Access-Control-Expose-Headers "Content-Security-Policy, Location"
+ 
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=200,L]
+ 
+        # make sure ETag headers are forwarded correctly
+        # Post Apache 2.4 have a look at
+        # https://httpd.apache.org/docs/trunk/mod/mod_deflate.html#deflatealteretag
+        RequestHeader edit "If-None-Match" '(.*)-gzip"$' '$1", $1-gzip"'
+ 
+        ## Enable WebSockets to check concurrent access
+        RewriteCond %{HTTP:Upgrade} websocket [NC]
+        RewriteCond %{HTTP:Connection} upgrade [NC]
+        RewriteRule /?(.*) ws://localhost:8080/$1 [P,L]
+ 
+        ## Viewer
+        redirect 301 /index.html http://VIEWER.EXAMPLE.ORG/viewer/
+        redirect 301 /viewer http://VIEWER.EXAMPLE.ORG/viewer/
+ 
+        RewriteRule ^/viewer/oai/oai2.xsl$ http://VIEWER.EXAMPLE.ORG/viewer/oai2.xsl
+        ProxyPassMatch ^/viewer/(oai.*)$ ajp://localhost:8009/M2M/$1 retry=0
+        <LocationMatch ^/viewer/(oai.*)$>
+                Forcetype text/xml
+                ProxyPassReverse ajp://localhost:8009/M2M/$1
+        </LocationMatch>
+ 
+        ProxyPassMatch ^/viewer/(sru.*)$ ajp://localhost:8009/M2M/$1 retry=0
+        <LocationMatch ^/viewer/(sru.*)$>
+                Forcetype text/xml
+                ProxyPassReverse ajp://localhost:8009/M2M/$1
+        </LocationMatch>
+ 
+        ProxyPassMatch ^/viewer/(.*)$ ajp://localhost:8009/viewer/$1 retry=0
+        <LocationMatch ^/viewer/(.*)$>
+                ProxyPassReverse ajp://localhost:8009/viewer/$1
+ 
+                <IfModule mod_expires.c>
+                        ExpiresActive on
+ 
+                        ExpiresByType image/jpg "access plus 1 months"
+                        ExpiresByType image/gif "access plus 1 months"
+                        ExpiresByType image/jpeg "access plus 1 months"
+                        ExpiresByType image/png "access plus 1 months"
+ 
+                        ExpiresByType font/ttf "access plus 1 year"
+                        ExpiresByType application/x-font-woff "access plus 1 year"
+                        ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+                </IfModule>
+ 
+                Require all granted  
+        </LocationMatch>
+ 
+ 
+        ## solr
+        redirect 301 /solr http://VIEWER.EXAMPLE.ORG/solr/
+        <Location /solr/>
+                Require local
+                ProxyPass ajp://localhost:8009/solr/ retry=0
+                ProxyPassReverse ajp://localhost:8009/solr/
+        </Location>
+ 
+ 
+        ## logging
+        CustomLog /var/log/apache2/VIEWER.EXAMPLE.ORG_access.log combined
+        ErrorLog /var/log/apache2/VIEWER.EXAMPLE.ORG_error.log
+ 
+        # Possible values include: debug, info, notice, warn, error, crit, alert, emerg.
+        LogLevel warn
+ 
+</VirtualHost>
+EOF
+```
+
+Enable the Goobi viewer vhost, disable the default vhost and restart the Apache web server:
+
+```bash
+a2dissite 000-default
+a2ensite ${VIEWER_HOSTNAME}.conf
+systemctl restart apache2.service
+```
+
+Finally create a robots.txt:
+
+```bash
+sed -e "s|VIEWER.EXAMPLE.ORG|${VIEWER_HOSTNAME}|g" << "EOF" >>/var/www/robots.txt
+User-agent: *
+Disallow: /viewer/content*action=pdf
+Disallow: /viewer/search/
+Disallow: /viewer/tags/
+Disallow: /viewer/term/
+Disallow: /viewer/oai
+Disallow: /viewer/nextHit/
+Disallow: /viewer/prevHit/
+Disallow: /viewer/login/
+Disallow: /viewer/crowd/
+Disallow: /error/
+
+#Sitemap: http://VIEWER.EXAMPLE.ORG/viewer/sitemap_index.xml
+ 
+Crawl-delay: 10
+EOF
+```
+
+If UFW is used, Apache must be enabled:
+
+```bash
+ufw allow Apache\ Full
+```
+
+### MySQL / MariaDB <a id="mysql_mariadb"></a>
+
+The Goobi viewer requires a database and its own user. This is created with the following command:
+
+```sql
+mysql -e "CREATE DATABASE viewer;
+CREATE USER 'viewer'@'localhost' IDENTIFIED BY '$PW_SQL_VIEWER';
+GRANT ALL PRIVILEGES ON viewer.* TO 'viewer'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;"
+```
+
+The database schema is created automatically the first time the application is started.
+
+### NFS <a id="nfs_export_von_opt_digiverso_viewer"></a>
+
+This point is only relevant if Goobi workflow is/is also installed and this is not done on the same machine. 
+
+Then the `/opt/digiverso/viewer` folder must be exported to the Goobi workflow server. NFS is used for this. The adjustments for this are here:
+
+```bash
+apt install nfs-kernel-server -y
+```
+
+Export of the hotfolder:
+
+```bash
+export IP_GOOBI=1.2.3.4  # IP-Adresse des Goobi workflow Servers
+echo "/opt/digiverso/viewer/hotfolder ${IP_GOOBI}/255.255.255.255(rw,sync,no_subtree_check,all_squash,anonuid=$(id -u tomcat),anongid=$(id -g tomcat))" >> /etc/exports
+exportfs -av
+```
+
+If UFW is used, TCP 2049 must be enabled for NFSv4:
+
+```text
+ufw allow from $IP_GOOBI proto tcp to any port 2049
+```
+
+The adjustments for Goobi workflow can be found in the installation instructions there:
+
+* [https://docs.intranda.com/goobi-workflow-en/admin/8\#einrichtung-von-nfs](https://docs.intranda.com/goobi-workflow-en/admin/8#einrichtung-von-nfs)
+
+## Installation
+
+The installation of the required components is described below.
+
+### Apache Solr
+
+Download Solr 8.5.2 and unzip the installation script:
+
+```bash
+cd $install
+wget http://archive.apache.org/dist/lucene/solr/8.5.2/solr-8.5.2.tgz
+tar -xzf solr-8.5.2.tgz solr-8.5.2/bin/install_solr_service.sh --strip-components=2
+```
+
+Now create the folder `/opt/digiverso/solr` and install it there:
+
+```bash
+mkdir -p /opt/digiverso/solr/
+./install_solr_service.sh solr-8.5.2.tgz -i /opt/digiverso/solr -d /opt/digiverso/solr -u solr -s solr -p 8983 -n
+```
+
+Now adjust the limits for the user solr:
+
+```bash
+cat << "EOF" >/etc/security/limits.d/solr.conf
+solr hard nofile 65535
+solr soft nofile 65535
+solr hard nproc 65535
+solr soft nproc 65535
+EOF
+```
+
+To use streaming expressions Solr is not installed in the standalone version but in the SolrCloud variant. However, we only use one node. For the configuration Zookeeper is used:
+
+Make sure that Zookeeper only listens on localhost:
+
+```c
+patch /etc/zookeeper/conf/zoo.cfg << "EOF"
+@@ -15,6 +15,7 @@
+ 
+ # the port at which the clients will connect
+ clientPort=2181
++clientPortAddress=127.0.0.1
+ 
+ # specify all zookeeper servers
+ # The fist port is used by followers to connect to the leader
+EOF
+systemctl restart zookeeper
+```
+
+Then make the installation known to Solr and adjust the memory, the garbage collector options and the log level. Furthermore, the Solr should only listen on localhost:
+
+```c
+patch /etc/default/solr.in.sh << "EOF"
+@@ -30,3 +30,3 @@
+ # Increase Java Heap as needed to support your indexing / query needs
+-#SOLR_HEAP="512m"
++SOLR_HEAP="2048m"
+ 
+@@ -48,15 +48,15 @@
+ # These GC settings have shown to work well for a number of common Solr workloads
+-#GC_TUNE=" \
+-#-XX:SurvivorRatio=4 \
+-#-XX:TargetSurvivorRatio=90 \
+-#-XX:MaxTenuringThreshold=8 \
+-#-XX:+UseConcMarkSweepGC \
+-#-XX:ConcGCThreads=4 -XX:ParallelGCThreads=4 \
+-#-XX:+CMSScavengeBeforeRemark \
+-#-XX:PretenureSizeThreshold=64m \
+-#-XX:+UseCMSInitiatingOccupancyOnly \
+-#-XX:CMSInitiatingOccupancyFraction=50 \
+-#-XX:CMSMaxAbortablePrecleanTime=6000 \
+-#-XX:+CMSParallelRemarkEnabled \
+-#-XX:+ParallelRefProcEnabled \
++GC_TUNE=" \
++-XX:SurvivorRatio=4 \
++-XX:TargetSurvivorRatio=90 \
++-XX:MaxTenuringThreshold=8 \
++-XX:+UseConcMarkSweepGC \
++-XX:ConcGCThreads=4 -XX:ParallelGCThreads=4 \
++-XX:+CMSScavengeBeforeRemark \
++-XX:PretenureSizeThreshold=64m \
++-XX:+UseCMSInitiatingOccupancyOnly \
++-XX:CMSInitiatingOccupancyFraction=50 \
++-XX:CMSMaxAbortablePrecleanTime=6000 \
++-XX:+CMSParallelRemarkEnabled \
++-XX:+ParallelRefProcEnabled"
+ #-XX:-OmitStackTraceInFastThrow  etc.
+@@ -66,3 +66,3 @@
+ # Leave empty if not using SolrCloud
+-#ZK_HOST=""
++ZK_HOST="127.0.0.1:2181"
+ 
+@@ -73,3 +73,3 @@
+ # for production SolrCloud environments to control the hostname exposed to cluster state
+-#SOLR_HOST="192.168.1.1"
++SOLR_HOST="127.0.0.1"
+ 
+@@ -115,3 +115,3 @@
+ # This is an alternative to changing the rootLogger in log4j2.xml
+-#SOLR_LOG_LEVEL=INFO
++SOLR_LOG_LEVEL=ERROR
+ 
+@@ -212,3 +212,3 @@
+ # host checking can be disabled by using the system property "solr.disable.shardsWhitelist"
+-#SOLR_OPTS="$SOLR_OPTS -Dsolr.shardsWhitelist=http://localhost:8983,http://localhost:8984"
++SOLR_OPTS="$SOLR_OPTS -Dsolr.disable.shardsWhitelist"
+ 
+@@ -234,2 +234,3 @@
+ SOLR_PORT="8983"
++SOLR_OPTS="$SOLR_OPTS -Djetty.host=127.0.0.1"
+ 
+EOF
+```
+
+Now make the Solr script executable:
+
+```bash
+chmod 755 /opt/digiverso/solr/solr/bin/solr
+```
+
+Now the configuration is stored in a new configset:
+
+```markup
+cd /opt/digiverso/solr/solr/server/solr/configsets/
+cp -a _default/ goobiviewer
+cd goobiviewer/conf/
+rm managed-schema
+wget -O schema.xml https://raw.githubusercontent.com/intranda/goobi-viewer-indexer/master/goobi-viewer-indexer/src/main/resources/other/schema.xml
+cp lang/stopwords_de.txt lang/stopwords.txt
+wget https://raw.githubusercontent.com/intranda/goobi-viewer-indexer/master/goobi-viewer-indexer/src/main/resources/other/mapping-ISOLatin1Accent.txt
+patch solrconfig.xml << "EOF"
+@@ -21,6 +21,8 @@
+      this file, see http://wiki.apache.org/solr/SolrConfigXml.
+ -->
+ <config>
++  <schemaFactory class="ClassicIndexSchemaFactory"/>
++
+   <!-- In all configuration below, a prefix of "solr." for class names
+        is an alias that causes solr to search appropriate packages,
+        including org.apache.solr.(search|update|request|core|analysis)
+@@ -57,6 +59,10 @@
+ 
+               <lib dir="./lib" />
+     -->
++  <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lib" regex=".*\.jar" />
++  <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lucene-libs" regex=".*\.jar" />
++  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-analysis-extras-\d.*\.jar" />
++
+ 
+   <!-- A 'dir' option by itself adds any files found in the directory
+        to the classpath, this is useful for including all jars in a
+@@ -773,7 +779,7 @@
+ 
+   <initParams path="/update/**,/query,/select,/spell">
+     <lst name="defaults">
+-      <str name="df">_text_</str>
++      <str name="df">DEFAULT</str>
+     </lst>
+   </initParams>
+ 
+@@ -1108,7 +1114,7 @@
+   </updateProcessor>
+ 
+   <!-- The update.autoCreateFields property can be turned to false to disable schemaless mode -->
+-  <updateRequestProcessorChain name="add-unknown-fields-to-the-schema" default="${update.autoCreateFields:true}"
++  <updateRequestProcessorChain name="add-unknown-fields-to-the-schema" default="${update.autoCreateFields:false}"
+            processor="uuid,remove-blank,field-name-mutating,parse-boolean,parse-long,parse-double,parse-date,add-schema-fields">
+     <processor class="solr.LogUpdateProcessorFactory"/>
+     <processor class="solr.DistributedUpdateProcessorFactory"/>
+​
+EOF
+chown -R solr. *
+```
+
+Upload the new configset to Zookeeper now:
+
+```bash
+cd /opt/digiverso/solr/solr/
+sudo -u solr bin/solr zk upconfig -n goobiviewer -d server/solr/configsets/goobiviewer/
+```
+
+The JTS library is still needed for the search for geocoordinates:
+
+```bash
+wget -O /opt/digiverso/solr/solr/server/solr-webapp/webapp/WEB-INF/lib/jts-core-1.17.0.jar https://github.com/locationtech/jts/releases/download/1.17.0/jts-core-1.17.0.jar
+chown solr. /opt/digiverso/solr/solr/server/solr-webapp/webapp/WEB-INF/lib/jts-core-1.17.0.jar
+```
+
+Finally, start the service and create a new collection for the Goobi viewer with its configuration files:Solr in Tomcat:
+
+```bash
+systemctl start solr
+sudo -u solr bin/solr create -c collection1 -n goobiviewer
+```
+
+### Goobi viewer Indexer
+
+First the application is downloaded. Then copy the required files to /opt/digiverso/indexer/ and rename the indexerconfig\_solr.xml to solr\_indexerconfig.xml, check the Tomcat port and replace `C:` with `/opt` if necessary. Finally the systemd service unit is activated:
+
+```bash
+wget -O /opt/digiverso/indexer/solrIndexer.jar https://github.com/intranda/goobi-viewer-indexer/releases/latest/download/solrIndexer.jar
+wget -O /opt/digiverso/indexer/solr_indexerconfig.xml https://raw.githubusercontent.com/intranda/goobi-viewer-indexer/master/goobi-viewer-indexer/src/main/resources/indexerconfig_solr.xml
+sed -e 's|<solrUrl>.*</solrUrl>|<solrUrl>http://localhost:8983/solr/collection1</solrUrl>|' -e 's|C:/|/|g' -i /opt/digiverso/indexer/solr_indexerconfig.xml
+wget -O /etc/systemd/system/solrindexer.service https://raw.githubusercontent.com/intranda/goobi-viewer-indexer/master/goobi-viewer-indexer/src/main/resources/other/solrindexer.service
+systemctl enable solrindexer.service
+```
+
+### Goobi viewer
+
+Stop the Tomcat service:
+
+```text
+systemctl stop tomcat9
+```
+
+Then put the following file to `/etc/tomcat9/Catalina/localhost/viewer.xml`:
+
+```markup
+sed -e "s|PW_SQL_VIEWER|${PW_SQL_VIEWER}|g" << "EOF" >/etc/tomcat9/Catalina/localhost/viewer.xml
+<?xml version='1.0' encoding='UTF-8'?>
+<Context>
+    <Resources>
+        <PreResources 
+            className="org.apache.catalina.webresources.DirResourceSet"
+            base="/opt/digiverso/viewer/themes/goobi-viewer-theme-reference/goobi-viewer-theme-reference/WebContent/resources/themes/"
+            webAppMount="/resources/themes" />  
+    </Resources>
+    <Resource
+        name="viewer" 
+        auth="Container" 
+        factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" 
+        type="javax.sql.DataSource" 
+        driverClassName="org.mariadb.jdbc.Driver" 
+        username="viewer" 
+        password="PW_SQL_VIEWER" 
+        maxActive="100" 
+        maxIdle="30" 
+        minIdle="4" 
+        maxWait="10000" 
+        testOnBorrow="true" 
+        testWhileIdle="true" 
+        validationQuery="SELECT SQL_NO_CACHE 1" 
+        removeAbandoned="true" 
+        removeAbandonedTimeout="600" 
+        url="jdbc:mysql://localhost/viewer?characterEncoding=UTF-8&amp;autoReconnect=true&amp;autoReconnectForPools=true" />
+</Context>
+EOF
+```
+
+Now adjust the file rights so that the file is not deleted with an update:
+
+```bash
+chown -R root.tomcat /etc/tomcat9/Catalina
+chmod -R g-w /etc/tomcat9/Catalina
+```
+
+The theme is integrated as an external theme:
+
+```bash
+mkdir -p /opt/digiverso/viewer/themes/
+cd /opt/digiverso/viewer/themes/
+git clone https://github.com/intranda/goobi-viewer-theme-reference.git
+```
+
+Now download the Goobi viewer and place it in the expected location in the file system:
+
+```bash
+wget -O /var/lib/tomcat9/webapps/viewer.war https://github.com/intranda/goobi-viewer-theme-reference/releases/latest/download/viewer.war
+```
+
+Finally move the last configuration files and restart the Tomcat service:
+
+```bash
+mv $install/goobi-viewer-core-config/goobi-viewer-core-config/src/main/resources/install/* /opt/digiverso/viewer/config/
+chown -R tomcat: /opt/digiverso/viewer/
+systemctl start tomcat9
+```
+
+### Connector - \(OAI & SRU\)
+
+For the installation of the OAI and SRU interface, the application must first be placed in the expected location in the file system:
+
+```bash
+wget -O /var/lib/tomcat9/webapps/M2M.war https://github.com/intranda/goobi-viewer-connector/releases/latest/download/M2M.war
+```
+
+Then download further required files and adjust the rights:
+
+```bash
+wget -O /opt/digiverso/viewer/oai/MARC21slimUtils.xsl https://raw.githubusercontent.com/intranda/goobi-viewer-connector/master/goobi-viewer-connector/src/main/resources/MARC21slimUtils.xsl
+wget -O /opt/digiverso/viewer/oai/MODS2MARC21slim.xsl https://raw.githubusercontent.com/intranda/goobi-viewer-connector/master/goobi-viewer-connector/src/main/resources/MODS2MARC21slim.xsl
+chown -R tomcat: /opt/digiverso/viewer/oai/
+```
+
+Finally, place a local `config_oai.xml` in the file system:
+
+```markup
+sed -e "s|VIEWER.EXAMPLE.ORG|${VIEWER_HOSTNAME}|g" << "EOF" >/opt/digiverso/viewer/config/config_oai.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+        <identifyTags>
+                <baseURL useInRequestElement="true">http://VIEWER.EXAMPLE.ORG/viewer/oai</baseURL>
+                <adminEmail>support@intranda.com</adminEmail>
+        </identifyTags>
+        <solr>
+                <solrUrl>http://localhost:8983/solr/collection1</solrUrl>
+        </solr>
+        <urnResolverUrl>http://VIEWER.EXAMPLE.ORG/viewer/resolver?urn=</urnResolverUrl>
+        <piResolverUrl>http://VIEWER.EXAMPLE.ORG/viewer/piresolver?id=</piResolverUrl>
+</config>
+EOF
+```
+
+Adjust the settings to the correct URL so that the resolver links work and ensure that the port of the tomcat on which the Solr service is running is 8080:
+
+```bash
+sed -i -e "s|http://localhost:8080/viewer/oai|http://${VIEWER_HOSTNAME}/viewer/oai|g" -e "s|http://localhost:8080/viewer/resolver|http://${VIEWER_HOSTNAME}/viewer/resolver|g" -e "s|http://localhost:8080/viewer/piresolver|http://${VIEWER_HOSTNAME}/viewer/piresolver|g" -e "s|http://localhost:8081/solr|http://localhost:8983/solr|g" /opt/digiverso/viewer/config/config_oai.xml
+```
+
+## Settings
+
+### Cronjob
+
+A cronjob must be set up for regular tasks:
+
+```bash
+sed -e "s|VIEWER.EXAMPLE.ORG|${VIEWER_HOSTNAME}|g" -e "s|TOKEN|${TOKEN}|g" << "EOF" >/etc/cron.d/intranda-goobiviewer
+PATH=/usr/bin:/bin:/usr/sbin/
+MAILTO=support@intranda.com
+ 
+#
+# Regular cron jobs for the Goobi viewer
+#
+ 
+## This REST call triggers the email notification about new search hits for users, 
+## that enabled notifications for saved searches
+42 8,12,17  * * *   root    curl -s -H "Content-Type: application/json" -H "token:TOKEN" -d '{"type":"NOTIFY_SEARCH_UPDATE"}' http://localhost:8080/viewer/api/v1/tasks/ 1>/dev/null
+ 
+## This REST call creates an XML sitemap for the Goobi viewer instance. Please always 
+## call it on it's external URL because otherwise the protocol (http/https) might not 
+## be detected correctly
+18 1        * * *   root    curl -s -H "Content-Type: application/json" -H "token:TOKEN" -d '{"type":"UPDATE_SITEMAP"}' http://localhost:8080/viewer/api/v1/tasks/ 1>/dev/null
+ 
+## These two scripts pull the theme git repository regulary. The @daily part is only 
+## a reminder for the 1-minute schedule
+#*/1 *       * * *   root    cd /opt/digiverso/viewer/themes/goobi-viewer-theme-reference; git pull | grep -v -e "Already up.to.date." -e "Bereits aktuell."
+#@daily              root    echo "Please look at the git checkout interval for the Goobi viewer theme" | mail -s "Reference: Theme repository is checked out every minute" support@intranda.com 
+ 
+## Optimize the Solr search index once a month
+@monthly            root    curl -s 'http://localhost:8080/solr/collection1/update?optimize=true&waitFlush=false'
+EOF
+```
+
+### config\_viewer.xml <a id="viewer_konfigurieren"></a>
+
+In the local `config_viewer.xml` different settings have to be stored:
+
+```markup
+sed -e "s|VIEWER.EXAMPLE.ORG|${VIEWER_HOSTNAME}/viewer|g" -e "s|TOKEN|${TOKEN}|g" << "EOF" >/opt/digiverso/viewer/config/config_viewer.xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+        <urls>
+                <metadata>
+                        <mets>http://VIEWER.EXAMPLE.ORG/oai?verb=GetRecord&amp;metadataPrefix=mets&amp;identifier=</mets>
+                        <marc>http://VIEWER.EXAMPLE.ORG/oai?verb=GetRecord&amp;metadataPrefix=marcxml&amp;identifier=</marc>
+                        <dc>http://VIEWER.EXAMPLE.ORG/oai?verb=GetRecord&amp;metadataPrefix=oai_dc&amp;identifier=</dc>
+                        <ese>http://VIEWER.EXAMPLE.ORG/oai?verb=GetRecord&amp;metadataPrefix=europeana&amp;identifier=</ese>
+                </metadata>
+ 
+                <contentServerWrapper>http://VIEWER.EXAMPLE.ORG/content/</contentServerWrapper>
+                <download>http://VIEWER.EXAMPLE.ORG/download/</download>
+                <rest>http://VIEWER.EXAMPLE.ORG/api/v1/</rest>
+                <solr>http://localhost:8983/solr/collection1</solr>
+        </urls>
+ 
+        <viewer>
+                <theme mainTheme="reference" discriminatorField="">
+                        <rootPath>/opt/digiverso/goobi-viewer-theme-reference/goobi-viewer-theme-reference/WebContent/resources/themes/</rootPath>
+                </theme>
+        </viewer>
+ 
+        <rss>
+                <numberOfItems>50</numberOfItems>
+                <title>Goobi viewer RSS Feed</title>
+                <description>new items</description>
+                <copyright>(c) Goobi viewer using institution </copyright>
+        </rss>
+ 
+        <webapi>        
+                <authorization>
+                        <token>TOKEN</token>
+                </authorization>
+        </webapi>
+</config>
+EOF
+```
+
+### Create user account 
+
+The Goobi viewer has a backend. The following command inserts a test account with the user name `goobi@intranda.com` and the password specified in the beginning into the database:
+
+```bash
+VIEWER_USERPASS_HASH=$(python3 -c "from passlib.hash import bcrypt; print(bcrypt.using(rounds=10, ident='2a').hash('${VIEWER_USERPASS}'))")
+mysql viewer -e "INSERT INTO users (active,email,password_hash,score,superuser) VALUES (1,'${VIEWER_USERNAME}','${VIEWER_USERPASS_HASH}',0,1);"
+```
+

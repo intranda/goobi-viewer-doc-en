@@ -169,6 +169,8 @@
 
 ## Devs & Ops
 
-* [3. Installation guide](devs-and-ops/3.md)
+* [3. Installation guide](devs-and-ops/3/README.md)
+  * [3.1 Classical](devs-and-ops/3/1.md)
+  * [3.2 Docker](devs-and-ops/3/2.md)
 * [5. API](devs-and-ops/5.md)
 
