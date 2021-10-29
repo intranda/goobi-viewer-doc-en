@@ -2,12 +2,12 @@
 
 The search in the Goobi viewer allows a combined search both in the metadata and in the full texts. Depending on the selection, a search can also be restricted to the metadata or the full texts of the digital collections. Links of search terms, a search with right or left truncation or a phrase search are also possible.
 
-![Simple search](../../../.gitbook/assets/conf_1.17.png)
+![Simple search](../../../.gitbook/assets/conf\_1.17.png)
 
 Depending on the precision of the search query and the number of indexed records, a very large number of search hits may result. These are displayed spread over several pages. A drop-down menu is available to the user, where he can select the number of search hits displayed per page. This list can be configured as follows:
 
 {% tabs %}
-{% tab title="config\_viewer.xml" %}
+{% tab title="config_viewer.xml" %}
 ```markup
 <search>
     <hitsPerPage>
@@ -22,12 +22,12 @@ Depending on the precision of the search query and the number of indexed records
 {% endtab %}
 {% endtabs %}
 
-The element `fulltextFragmentLength` defines the approximate length of the full text sections for the search hit display. The default value is 200. 
+The element `fulltextFragmentLength` defines the approximate length of the full text sections for the search hit display. The default value is 200.&#x20;
 
 The following configuration block is available to define the search ranges of the simple search:
 
 {% tabs %}
-{% tab title="config\_viewer.xml" %}
+{% tab title="config_viewer.xml" %}
 ```markup
 <search>
     <filters>
@@ -43,4 +43,3 @@ The following configuration block is available to define the search ranges of th
 {% endtabs %}
 
 Each filter entry creates a new radio button below the simple search.
-

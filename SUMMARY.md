@@ -4,7 +4,7 @@
 * [Documentation overview](overview.md)
 * [What is the Goobi viewer?](about.md)
 
-## Configuration <a id="conf"></a>
+## Configuration <a href="conf" id="conf"></a>
 
 * [1. Goobi viewer Core](conf/1/README.md)
   * [1.1 Local settings](conf/1/1.md)
@@ -71,7 +71,6 @@
     * [1.19.10 Multilingual metadata](conf/1/19/10.md)
     * [1.19.11 Additional settings](conf/1/19/11.md)
     * [1.19.12 Licenses](conf/1/19/12.md)
-    * [1.19.13 BaseX metadata](conf/1/19/13.md)
   * [1.20 Tables of contents](conf/1/20/README.md)
     * [1.20.1 Main table of contents](conf/1/20/1.md)
     * [1.20.2 Sidebar table of contents](conf/1/20/2.md)
@@ -97,6 +96,7 @@
   * [1.35 Embedding](conf/1/35.md)
   * [1.36 Maps](conf/1/36.md)
   * [1.37 Translations](conf/1/37.md)
+  * [1.38 Archive](conf/1/38.md)
 * [2. Goobi viewer Indexer](conf/2/README.md)
   * [2.1 Main configuration](conf/2/1.md)
   * [2.2 Directories](conf/2/2.md)
@@ -124,7 +124,7 @@
     * [3.1.12 Sets](conf/3/1/12.md)
   * [3.2 SRU interface](conf/3/2.md)
 
-## User interface <a id="ui"></a>
+## User interface <a href="ui" id="ui"></a>
 
 * [1. Frontend](ui/1.md)
 * [2. Backend](ui/2/README.md)
@@ -173,4 +173,3 @@
   * [3.1 Classical](devs-and-ops/3/1.md)
   * [3.2 Docker](devs-and-ops/3/2.md)
 * [5. API](devs-and-ops/5.md)
-
