@@ -4,7 +4,7 @@
 * [Documentation overview](overview.md)
 * [What is the Goobi viewer?](about.md)
 
-## Configuration <a href="conf" id="conf"></a>
+## Configuration <a href="#conf" id="conf"></a>
 
 * [1. Goobi viewer Core](conf/1/README.md)
   * [1.1 Local settings](conf/1/1.md)
@@ -124,7 +124,7 @@
     * [3.1.12 Sets](conf/3/1/12.md)
   * [3.2 SRU interface](conf/3/2.md)
 
-## User interface <a href="ui" id="ui"></a>
+## User interface <a href="#ui" id="ui"></a>
 
 * [1. Frontend](ui/1.md)
 * [2. Backend](ui/2/README.md)
@@ -165,7 +165,7 @@
   * [1.10 Archival documents](misc/1/10.md)
   * [1.11 Solr Queries](misc/1/1.11-solr-queries.md)
 * [2. FAQ](misc/2.md)
-* [3. Glossary](misc/3.-glossary.md)
+* [3. Glossary](misc/3.md)
 
 ## Devs & Ops
 
