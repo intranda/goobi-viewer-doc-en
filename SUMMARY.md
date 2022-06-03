@@ -70,8 +70,7 @@
     * [1.19.8 Browsing](conf/1/19/8.md)
     * [1.19.9 Metadata in the HTML pages](conf/1/19/9.md)
     * [1.19.10 Multilingual metadata](conf/1/19/10.md)
-    * [1.19.11 Additional settings](conf/1/19/11.md)
-    * [1.19.12 Licenses](conf/1/19/12.md)
+    * [1.19.11 Licenses](conf/1/19/11.md)
   * [1.20 Tables of contents](conf/1/20/README.md)
     * [1.20.1 Main table of contents](conf/1/20/1.md)
     * [1.20.2 Sidebar table of contents](conf/1/20/2.md)
@@ -98,6 +97,8 @@
   * [1.36 Maps](conf/1/36.md)
   * [1.37 Translations](conf/1/37.md)
   * [1.38 Archive](conf/1/38.md)
+  * [1.39 Campaigns](conf/1/39.md)
+  * [1.40 Add content](conf/1/40.md)
 * [2. Goobi viewer Indexer](conf/2/README.md)
   * [2.1 Main configuration](conf/2/1.md)
   * [2.2 Directories](conf/2/2.md)
@@ -166,12 +167,13 @@
   * [1.10 Archival documents](misc/1/10.md)
   * [1.11 Solr Queries](misc/1/1.11-solr-queries.md)
   * [1.12 Linking from METS file groups](misc/1/1.12-linking-from-mets-file-groups.md)
+  * [1.13 Add content](misc/1/13.md)
 * [2. FAQ](misc/2.md)
 * [3. Glossary](misc/3.md)
 
-## Devs & Ops
+## Devs & Ops <a href="#devops" id="devops"></a>
 
-* [3. Installation guide](devs-and-ops/3/README.md)
-  * [3.1 Classical](devs-and-ops/3/1.md)
-  * [3.2 Docker](devs-and-ops/3/2.md)
-* [5. API](devs-and-ops/5.md)
+* [3. Installation guide](devops/3/README.md)
+  * [3.1 Classical](devops/3/1.md)
+  * [3.2 Docker](devops/3/2.md)
+* [5. API](devops/5.md)
