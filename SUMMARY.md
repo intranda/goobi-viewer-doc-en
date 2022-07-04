@@ -46,7 +46,7 @@
     * [1.17.4 Timeline](conf/1/17/4.md)
     * [1.17.5 Calendar](conf/1/17/5.md)
     * [1.17.6 Save search](conf/1/17/6.md)
-    * [1.17.7 Boosting of whole records in the relevance sorting](conf/1/17/7.md)
+    * [1.17.7 Expand query for search sub-results](conf/1/17/7.md)
     * [1.17.8 Aggregated search hit display](conf/1/17/8.md)
     * [1.17.9 Versioning of records](conf/1/17/9.md)
     * [1.17.10 Exporting search hits](conf/1/17/10.md)
@@ -156,7 +156,7 @@
 
 * [1. Use cases](misc/1/README.md)
   * [1.1 Series and convolutes](misc/1/1.md)
-  * [1.2 Access licenses](misc/1/2.md)
+  * [1.2 Access restrictions](misc/1/2.md)
   * [1.3 Subthemes](misc/1/3.md)
   * [1.4 Authority data](misc/1/4.md)
   * [1.5 Multilingualism](misc/1/5.md)
