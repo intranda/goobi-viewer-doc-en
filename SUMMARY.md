@@ -171,9 +171,9 @@
 * [2. FAQ](misc/2.md)
 * [3. Glossary](misc/3.md)
 
-## Devs & Ops <a href="#devops" id="devops"></a>
+## Devs & Ops <a href="#devop" id="devop"></a>
 
-* [3. Installation guide](devops/3/README.md)
-  * [3.1 Classical](devops/3/1.md)
-  * [3.2 Docker](devops/3/2.md)
-* [5. API](devops/5.md)
+* [3. Installation guide](devop/3/README.md)
+  * [3.1 Classical](devop/3/1.md)
+  * [3.2 Docker](devop/3/2.md)
+* [5. API](devop/5.md)
