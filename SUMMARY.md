@@ -99,6 +99,8 @@
   * [1.38 Archive](conf/1/38.md)
   * [1.39 Campaigns](conf/1/39.md)
   * [1.40 Add content](conf/1/40.md)
+  * [1.41 Usage figures](conf/1/41.md)
+  * [1.42 Config Editor](conf/1/42.md)
 * [2. Goobi viewer Indexer](conf/2/README.md)
   * [2.1 Main configuration](conf/2/1.md)
   * [2.2 Directories](conf/2/2.md)
