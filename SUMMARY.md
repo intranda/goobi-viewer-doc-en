@@ -99,7 +99,7 @@
   * [1.41 Usage figures](conf/1/41.md)
   * [1.42 Config Editor](conf/1/42.md)
   * [1.43 Proxy](conf/1/43.md)
-  * [1.44 ActiveMQ](conf/1/1.44-activemq.md)
+  * [1.44 ActiveMQ](conf/1/44.md)
 * [2. Goobi viewer Indexer](conf/2/README.md)
   * [2.1 Main configuration](conf/2/1.md)
   * [2.2 Directories](conf/2/2.md)
