@@ -48,7 +48,7 @@
     * [1.17.7 Expand query for search sub-results](conf/1/17/7.md)
     * [1.17.8 Aggregated search hit display](conf/1/17/8.md)
     * [1.17.9 Versioning of records](conf/1/17/9.md)
-    * [1.17.10 Exporting search hits](conf/1/17/10.md)
+    * [1.17.10 Exporting search results](conf/1/17/10.md)
   * [1.18 Digital collections](conf/1/18/README.md)
     * [1.18.1 Collection hierarchy](conf/1/18/1.md)
     * [1.18.2 Sorting of records](conf/1/18/2.md)
