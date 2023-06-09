@@ -16,11 +16,14 @@ Depending on the precision of the search query and the number of indexed records
         <value>50</value>
         <value>100</value>
     </hitsPerPage>
+    <displayHitNumbers enabled="false" />
     <fulltextFragmentLength>120</fulltextFragmentLength>
 </search>
 ```
 {% endtab %}
 {% endtabs %}
+
+In the `displayHitNumbers` element, the `enabled` attribute can be used to control whether the search results should be displayed numbered. The default value is false.
 
 The element `fulltextFragmentLength` defines the approximate length of the full text sections for the search hit display. The default value is 200.&#x20;
 
