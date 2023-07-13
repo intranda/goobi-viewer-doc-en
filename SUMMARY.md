@@ -49,6 +49,7 @@
     * [1.17.8 Aggregated search hit display](conf/1/17/8.md)
     * [1.17.9 Versioning of records](conf/1/17/9.md)
     * [1.17.10 Exporting search results](conf/1/17/10.md)
+    * [1.17.11 Search hit metadata](conf/1/17/11.md)
   * [1.18 Digital collections](conf/1/18/README.md)
     * [1.18.1 Collection hierarchy](conf/1/18/1.md)
     * [1.18.2 Sorting of records](conf/1/18/2.md)
