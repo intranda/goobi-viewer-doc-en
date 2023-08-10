@@ -27,14 +27,14 @@ In the `displayHitNumbers` element, the `enabled` attribute can be used to contr
 
 The element `fulltextFragmentLength` defines the approximate length of the full text sections for the search hit display. The default value is 200.&#x20;
 
-The following configuration block is available to define the search ranges of the simple search:
+The following configuration block is available to define the search ranges of the simple search. The default value can be set with the attribute `default="true"`. If this does not exist, the value `filter_ALL` is automatically assumed.
 
 {% tabs %}
 {% tab title="config_viewer.xml" %}
 ```markup
 <search>
     <filters>
-        <filter>filter_ALL</filter>
+        <filter default="true">filter_ALL</filter>
         <filter>filter_DEFAULT</filter>
         <filter>filter_FULLTEXT</filter>
         <!-- <filter>filter_NORMDATATERMS</filter> -->
