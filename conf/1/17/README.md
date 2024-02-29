@@ -46,3 +46,18 @@ The following configuration block is available to define the search ranges of th
 {% endtabs %}
 
 Each filter entry creates a new radio button below the simple search.
+
+If there are sub-hits, the following two buttons can be used to set when they are displayed and how many should be reloaded:
+
+{% tabs %}
+{% tab title="config_viewer.xml" %}
+```markup
+<search>
+    <childHits>
+        <initialLoadLimit>0</initialLoadLimit>
+        <loadOnExpand>20</loadOnExpand>
+    </childHits>
+</search>
+```
+{% endtab %}
+{% endtabs %}

@@ -35,7 +35,7 @@
   * [1.12 Individual page types](conf/1/12.md)
   * [1.13 Opening certain document types in alternative page views](conf/1/13.md)
   * [1.14 Full text hints](conf/1/14.md)
-  * [1.15. Language switching for multilingual metadata](conf/1/15.md)
+  * [1.15. Language settings](conf/1/15.md)
   * [1.16 Theme](conf/1/16/README.md)
     * [1.16.1 External themes](conf/1/16/1.md)
   * [1.17 Search](conf/1/17/README.md)
