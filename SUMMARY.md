@@ -178,7 +178,11 @@
 
 ## Devs & Ops <a href="#devop" id="devop"></a>
 
+* [1. Core Changelog](devop/1/README.md)
+* [2. Theme Changelog](devop/2/README.md)
 * [3. Installation guide](devop/3/README.md)
   * [3.1 Classical](devop/3/1.md)
   * [3.2 Docker](devop/3/2.md)
+* [4. Development environment](devop/4/README.md)
 * [5. API](devop/5.md)
+* [6. Explained!](devop/6/README.md)
