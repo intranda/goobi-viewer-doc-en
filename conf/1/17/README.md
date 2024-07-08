@@ -39,6 +39,8 @@ The following configuration block is available to define the search ranges of th
         <filter>filter_FULLTEXT</filter>
         <!-- <filter>filter_NORMDATATERMS</filter> -->
         <!-- <filter>filter_UGCTERMS</filter> -->
+        <!-- <filter>filter_SEARCHTERMS_ARCHIVE</filter> -->
+        <!-- <filter>filter_CMS_TEXT_ALL</filter> -->
     </filters>
 </search>
 ```
