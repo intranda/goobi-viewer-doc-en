@@ -2,7 +2,7 @@
 
 The search in the Goobi viewer allows a combined search both in the metadata and in the full texts. Depending on the selection, a search can also be restricted to the metadata or the full texts of the digital collections. Links of search terms, a search with right or left truncation or a phrase search are also possible.
 
-![Simple search](../../../.gitbook/assets/conf\_1.17.png)
+![Simple search](../../../.gitbook/assets/conf_1.17.png)
 
 Depending on the precision of the search query and the number of indexed records, a very large number of search hits may result. These are displayed spread over several pages. A drop-down menu is available to the user, where he can select the number of search hits displayed per page. This list can be configured as follows:
 
@@ -18,6 +18,7 @@ Depending on the precision of the search query and the number of indexed records
     </hitsPerPage>
     <displayHitNumbers enabled="false" />
     <fulltextFragmentLength>120</fulltextFragmentLength>
+    <hitStyleClass>docstructtype__{record.DOCSTRCT}</hitStyleClass>
 </search>
 ```
 {% endtab %}
@@ -25,7 +26,9 @@ Depending on the precision of the search query and the number of indexed records
 
 In the `displayHitNumbers` element, the `enabled` attribute can be used to control whether the search results should be displayed numbered. The default value is false.
 
-The element `fulltextFragmentLength` defines the approximate length of the full text sections for the search hit display. The default value is 200.&#x20;
+The element `fulltextFragmentLength` defines the approximate length of the full text sections for the search hit display. The default value is `200`.&#x20;
+
+In the `hitStyleClass` element, a CSS class can be defined that is assigned to each search hit. Variables can be used according to the scheme {record.SOLR-FELDNAME}. The value of the Solr field - if it exists - is converted to lowercase letters and all characters other than letters and numbers are converted to underscores. With the CSS class, it is possible to enable different styling for different search hit types.
 
 The following configuration block is available to define the search ranges of the simple search. The default value can be set with the attribute `default="true"`. If this does not exist, the value `filter_ALL` is automatically assumed.
 
