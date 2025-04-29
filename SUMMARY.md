@@ -175,6 +175,7 @@
   * [1.12 Linking from METS file groups](misc/1/1.12-linking-from-mets-file-groups.md)
   * [1.13 Add content](misc/1/13.md)
   * [1.14 Shibboleth](misc/1/14.md)
+  * [1.15 Access restricted metadata](misc/1/15.md)
 * [2. FAQ](misc/2.md)
 * [3. Glossary](misc/3.md)
 
